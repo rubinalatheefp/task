@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ movie.poster.url }}" class="img-fluid mb-3" alt="Movie Poster" style="width: 400px; height: 600px;">
+        </div>
+        <div class="col-md-6">
+            <h1 class="h2 mb-4">{{ movie.title }}
+                <span style="font-size: 20px; margin-left: 10px;">
+                    <i class="fas fa-star" style="color: gold;"></i> {{ movie.rating }} / 5
+                    {% if movie.author.id == user.id %}
+                    <a href="{% url 'movieapp:editmovie' movie.id %}"><i class="fas fa-edit" style="color: blue; margin-left: 10px;"></i></a>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#dltModal" class="btn btn-link p-0 m-0">
+                        <i class="fas fa-trash-alt" style="color: red;"></i>
+                    </button>
+
+                    {% endif %}
+                </span>
+            </h1>
+
+            <h2 class="h4"><strong>Description:</strong></h2>
+            <div id="description-container" style="overflow-y: auto; max-height: 250px;">
+                <p class="lead" id="description">{{ movie.description }}</p>
+            </div>
+            <br>
+            <h2 class="h4"><strong>Genre:</strong></h2>
+            <p class="lead">{{ movie.category }}</p>
+            <h2 class="h4"><strong>Release Date:</strong></h2>
+            <p class="lead">{{ movie.release_date }}</p>
+            <h2 class="h4"><strong>Actors:</strong></h2>
+            <p class="lead">{{ movie.actors }}</p>
+            <a href="{{ movie.trailer }}" target="_blank"><button type="button" class="btn btn-primary btn-lg mt-3">Watch Trailer</button></a>
+            <a href="{% url 'movieapp:ratemovie' movie.id %}"><button type="button" class="btn btn-warning btn-lg mt-3">Rate this movie</button></a>
+        </div>
+    </div>
+
+    <h2 class="h2 mb-4">User Reviews</h2>
+
+    <section class="content-item mb-5" id="reviews">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'movieapp:reviewmovie' movie.id %}"> {% csrf_token %}
+                        <h3 class="pull-left">Add a review</h3>
+                        <fieldset>
+                            <div class="row">
+                                <div class="col-sm-2 col-lg-1 hidden-xs">
+                                    <img class="img-responsive" src="{{ user.avatar.img }}" alt="" style="height: 100px; width: 100px; border-radius: 20%;">
+                                </div>
+                                <div class="form-group col-xs-12 col-sm-10 col-lg-11">
+                                    <textarea class="form-control" id="message" placeholder="Your review" required="" name="review" maxlength="2000"></textarea>
+                                    <p id="char-count" class="text-muted">0 / 2000 characters</p>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <button type="submit" class="btn btn-secondary pull-right">Submit</button>
+                    </form>
+                    {% if messages %}
+                    {% for msg in messages %}
+                    <p class="{{msg.tags}}" align="center" style="color: red;">{{msg}}</p>
+                    {%endfor %}
+                    {% endif %}
+                    {% else %}
+                    <div class="alert alert-warning mt-3" role="alert">
+                        You must be logged in to review.
+                        <a href="{% url 'movieapp:login' %}" class="btn btn-primary btn-sm ml-2">Login</a>
+                    </div>
+                    {% endif %}
+
+                <h3>{{ count }} Review(s)</h3>
+
+                <!-- REVIEW - START -->
+                {% for review in reviews %}
+                <div class="media position-relative">
+                    <a class="pull-left" href="{% url 'movieapp:profile' review.user.id %}">
+                        <img class="media-object" src="{{ review.user.avatar.img }}" alt="">
+                    </a>
+                    <div class="media-body">
+                        <h4 class="media-heading">{{ review.user.username }}</h4>
+                        <p>{{ review.review }}</p>
+                        <ul class="list-unstyled list-inline media-detail pull-left">
+                            <li><i class="fa fa-calendar"></i>{{ review.added_on }}</li>
+                        </ul>
+                    </div>
+                    <div class="position-absolute top-0 end-0">
+                        {% if review.user.id == user.id %}
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#editReview" class="btn btn-link p-0">
+                            <i class="fas fa-edit" style="color: blue;"></i>
+                        </button>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#dltReview" class="btn btn-link p-0">
+                            <i class="fas fa-trash-alt" style="color: red;"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-info" role="alert">
+                    No reviews yet!!
+                </div>
+                {% endfor %}
+                <!-- REVIEW - END -->
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- DELETE POPUP MOVIE -->
+<div class="modal fade" id="dltModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete?</h5>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ movie.title }}</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'movieapp:dltmovie' movie.id %}"> {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Go Back</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- DELETE POPUP MOVIE END -->
+
+<!-- DELETE POPUP REVIEW -->
+<div class="modal fade" id="dltReview" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="example ModalLabel">Delete?</h5>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your review?</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'movieapp:dltreview' movie.id %}"> {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Go Back</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- DELETE POPUP REVIEW END -->
+
+<!-- EDIT POPUP REVIEW START -->
+{% if curr_user_review %}
+<div class="modal fade" id="editReview" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Review</h5>
+        </div>
+        <form method="post" action="{% url 'movieapp:editreview' curr_user_review.id %}"> {% csrf_token %}
+        <div class="modal-body">
+            <textarea name="review" placeholder="Review" class="form-control" maxlength="2000">{{ curr_user_review.review }}</textarea> <br>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Edit</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <!-- EDIT POPUP REVIEW END -->
+
+<script>
+    // Limit textarea review box to 2000 characters
+    let textarea = document.getElementById('message');
+    let charCount = document.getElementById('char-count');
+
+    textarea.addEventListener('input', function() {
+        charCount.textContent = this.value.length + ' / 2000 characters';
+        if (this.value.length >= 2000) {
+            this.value = this.value.substring(0, 2000);
+            charCount.textContent = '2000 characters (maximum)';
+        }
+    });
+</script>
+
+{% endblock %}

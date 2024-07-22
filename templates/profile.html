@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<div class="container mt-5 mb-5">
+    <div class="card bg-light mb-3">
+        <div class="row no-gutters">
+            <!-- Profile Photo -->
+            <div class="col-md-4">
+                <img src="{{ profile_user.avatar.img }}" alt="Profile Photo" class="profile-photo card-img-top" style="width: 300px; height: 300px;">
+            </div>
+            <!-- User Information -->
+            <div class="col-md-8">
+                <div class="card-body">
+                    <h3 class="card-title display-4">{{ profile_user.first_name }} {{ profile_user.last_name }}</h3>
+                    <p class="card-text lead"><strong>Username:</strong> {{ profile_user.username }}</p>
+                    <p class="card-text lead"><strong>Email:</strong> {{ profile_user.email }}</p>
+                    <p class="card-text lead"><strong>Joined Date:</strong> {{ profile_user.date_joined }}</p>
+                    {% if user.id == profile_user.id %}
+                    <a href="{% url 'movieapp:editprofile' profile_user.id %}"><button type="button" class="btn btn-warning">Edit Profile</button></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Added Movies Section -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h2>Added Movies</h2>
+            <div class="row">
+                {% for m in movies %}
+                <div class="col-md-2 mb-4">
+                    <a href="{% url 'movieapp:viewmovie' m.id %}" style="text-decoration: none; color: inherit;">
+                        <div class="card" style="width: fit-content;">
+                            <img src="{{ m.poster.url }}" class="card-img-top" alt="Movie Poster" style="width: 200px; height: 300px;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ m.title | truncatechars:15 }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% empty %}
+                <div class="alert alert-info" role="alert">
+                    User has not added any movies yet!!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+        <!-- Added Reviews Section -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h2>Added Reviews</h2>
+                <div class="card-columns">
+                    {% for review in reviews %}
+                    <div class="card">
+                        <div class="card-body">
+                            <a href="{% url 'movieapp:viewmovie' review.movie.id %}" style="text-decoration: none; color: inherit;"><h5 class="card-title">{{ review.movie.title }}</h5></a>
+                            <p class="card-text">{{ review.review|truncatechars:500 }}</p>
+                            <p class="card-text"><small class="text-muted">Date: {{ review.added_on }}</small></p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info" role="alert">
+                        User has not added any reviews yet!!
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block body %}
+<div class="container-fluid position-relative p-0">
+      <img src="{% static 'img/MOVIE flex.png' %}" alt="Description of Image" class="img-fluid w-100 ;width:200px;">
+
+       <div class="position-absolute top-0 end-0 text-light p-5">
+           <div class="display-4" style="font-family: 'Brush Script MT', cursive;">
+               <p>Its your platform movie</p>
+               <p>selection as your concept</p>
+            </div>
+            <div class="mt-4">
+            {% if user.is_authenticated %}
+            {% else %}
+           <a href="{% url 'movieapp:register' %}" style="text-decoration: none; color: inherit;"><button type="button" class="btn btn-dark btn-lg mr-3">Get Started</button></a>
+           {% endif %}
+           <a href="{% url 'movieapp:allmovies' %}" style="text-decoration: none; color: inherit;"><button type="button" class="btn btn-light btn-lg">Explore</button></a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
